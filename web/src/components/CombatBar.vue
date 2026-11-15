@@ -6,6 +6,7 @@ const props = defineProps({
   ddragon: String,
   activeAnchor: { type: String, default: '' },
 })
+const emit = defineEmits(['jump'])
 const variant = computed(() => props.item.variant)
 const core = computed(() => variant.value.builds.core?.[0] || { items: [], ids: [] })
 const icon = (id) => id ? `https://ddragon.leagueoflegends.com/cdn/${props.ddragon}/img/item/${id}.png` : ''
@@ -35,9 +36,9 @@ const isActive = (key) => props.activeAnchor?.startsWith(props.item.key + '-') |
       <b>{{ variant.skill_order.priority }}</b>
     </div>
     <div class="combat-links">
-      <a :href="'#' + item.key + '-builds'" :class="{ active: activeAnchor === item.key + '-builds' }">出装</a>
-      <a :href="'#' + item.key + '-augments'" :class="{ active: activeAnchor === item.key + '-augments' }">海克斯</a>
-      <a :href="'#' + item.key + '-combos'" :class="{ active: activeAnchor === item.key + '-combos' }">连招</a>
+      <button type="button" :class="{ active: activeAnchor === item.key + '-builds' }" @click="emit('jump', item.key + '-builds')">出装</button>
+      <button type="button" :class="{ active: activeAnchor === item.key + '-augments' }" @click="emit('jump', item.key + '-augments')">海克斯</button>
+      <button type="button" :class="{ active: activeAnchor === item.key + '-combos' }" @click="emit('jump', item.key + '-combos')">连招</button>
     </div>
   </div>
 </template>

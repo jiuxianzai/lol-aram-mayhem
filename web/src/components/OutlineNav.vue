@@ -1,5 +1,6 @@
 <script setup>
 const props = defineProps({ variants: Array, styleMeta: Object, mobile: Boolean, activeAnchor: { type: String, default: '' } })
+const emit = defineEmits(['jump'])
 const sections = [
   { key: 'builds', label: '出装' },
   { key: 'augments', label: '海克斯' },
@@ -19,16 +20,17 @@ const linkActive = (key, s) => props.activeAnchor === key + '-' + s
       <small>OUTLINE</small>
     </div>
     <div v-for="item in variants" :key="item.key" class="outline-group">
-      <a class="outline-style" :class="{ active: styleActive(item.key) }" :href="'#style-' + item.key">
+      <button type="button" class="outline-style" :class="{ active: styleActive(item.key) }" @click="emit('jump', 'style-' + item.key)">
         <i></i>{{ styleMeta[item.key]?.label }}<em>{{ item.variant.score }}</em>
-      </a>
-      <a
+      </button>
+      <button
         v-for="s in sections"
         :key="s.key"
+        type="button"
         class="outline-link"
         :class="{ active: linkActive(item.key, s.key) }"
-        :href="'#' + item.key + '-' + s.key"
-      >{{ s.label }}</a>
+        @click="emit('jump', item.key + '-' + s.key)"
+      >{{ s.label }}</button>
     </div>
   </nav>
 </template>

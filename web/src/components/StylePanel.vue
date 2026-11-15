@@ -1,6 +1,8 @@
 <script setup>
+import { ref } from 'vue'
 import AugmentTier from './AugmentTier.vue'
 const props = defineProps({ variant: Object, meta: Object, ddragon: String })
+const showAllAugments = ref(false)
 const tiers = [
   { key: 'silver', label: '白银', en: 'SILVER' },
   { key: 'gold', label: '黄金', en: 'GOLD' },
@@ -55,7 +57,13 @@ const bootIcon = (v) => itemIcon(v.builds.boots_ids?.[0])
       <div class="branch-grid">
         <div v-for="(b, key) in variant.builds.branches" :key="key" class="branch">
           <div class="branch-title">{{ b.title }}</div>
-          <div class="branch-items"><template v-for="(n, i) in b.items" :key="n"><img v-if="b.item_ids?.[i]" :src="itemIcon(b.item_ids[i])" alt="" loading="lazy" />{{ n }}<span v-if="i < b.items.length - 1" class="plus"> + </span></template><span v-if="!b.items.length">—</span></div>
+          <div class="branch-items">
+            <template v-for="(n, i) in b.items" :key="n">
+              <span class="branch-item"><img v-if="b.item_ids?.[i]" :src="itemIcon(b.item_ids[i])" alt="" loading="lazy" />{{ n }}</span>
+              <span v-if="i < b.items.length - 1" class="plus">+</span>
+            </template>
+            <span v-if="!b.items.length">—</span>
+          </div>
           <div v-if="b.boots" class="branch-boots">鞋：{{ b.boots }}</div>
           <p>{{ b.note }}</p>
         </div>
@@ -63,9 +71,16 @@ const bootIcon = (v) => itemIcon(v.builds.boots_ids?.[0])
     </section>
 
     <section :id="variant.style + '-augments'" class="block anchor">
-      <div class="section-title"><span>海克斯推荐</span><small>同英雄池 + {{ meta.label }} 适配重排</small></div>
+      <div class="section-title aug-title">
+        <span>海克斯推荐</span>
+        <small>同英雄池 + {{ meta.label }} 适配重排</small>
+        <button class="aug-expand" :class="{ open: showAllAugments }" @click="showAllAugments = !showAllAugments">
+          {{ showAllAugments ? '收起 4–10' : '展开 4–10（三档一起）' }}
+          <span class="aug-expand-caret" aria-hidden="true">⌄</span>
+        </button>
+      </div>
       <div class="tier-grid">
-        <AugmentTier v-for="t in tiers" :key="t.key" :tier="t" :items="variant.augments[t.key]" />
+        <AugmentTier v-for="t in tiers" :key="t.key" :tier="t" :items="variant.augments[t.key]" :open="showAllAugments" />
       </div>
     </section>
 

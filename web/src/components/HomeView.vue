@@ -1,5 +1,6 @@
 <script setup>
-import { ref, computed, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
+import { ref, computed, watch, onMounted, onBeforeUnmount, onActivated, onDeactivated, nextTick } from 'vue'
+import { compareKey, searchChampions } from '../search.js'
 
 const props = defineProps({
   champions: { type: Array, default: () => [] },
@@ -19,14 +20,8 @@ let scrollRaf = 0
 let manualUntil = 0
 
 const favSet = computed(() => new Set(props.favorites))
-function compareKey(a, b) {
-  const A = a.sort_key.split(' '), B = b.sort_key.split(' ')
-  for (let i = 0; i < Math.min(A.length, B.length); i++) {
-    const c = A[i].localeCompare(B[i])
-    if (c) return c
-  }
-  return A.length - B.length
-}
+const results = computed(() => searchChampions(props.champions, query.value, favSet.value))
+
 const favList = computed(() =>
   props.champions.filter(c => favSet.value.has(c.id)).sort(compareKey)
 )
@@ -36,11 +31,7 @@ const letterList = computed(() => {
   if (available.value.has('#')) base.push('#')
   return base
 })
-
-const sortedAll = computed(() =>
-  [...props.champions].sort(compareKey)
-)
-
+const sortedAll = computed(() => [...props.champions].sort(compareKey))
 const groups = computed(() => {
   const map = new Map()
   for (const c of sortedAll.value) {
@@ -48,46 +39,6 @@ const groups = computed(() => {
     map.get(c.initial).push(c)
   }
   return [...map.entries()].map(([letter, items]) => ({ letter, items }))
-})
-
-function norm(s) {
-  return (s || '').toLowerCase().replace(/[\s·,，/._'’\-—()（）[\]【】]+/g, '')
-}
-
-function editDistance(a, b) {
-  if (a === b) return 0
-  if (!a.length) return b.length
-  if (!b.length) return a.length
-  let prev = Array.from({ length: b.length + 1 }, (_, i) => i)
-  for (let i = 1; i <= a.length; i++) {
-    const cur = [i]
-    for (let j = 1; j <= b.length; j++) {
-      cur[j] = Math.min(cur[j - 1] + 1, prev[j] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1))
-    }
-    prev = cur
-  }
-  return prev[b.length]
-}
-
-function score(c, q) {
-  const fields = (c.search || '').split('|').map(norm).filter(Boolean)
-  if (fields.some(f => f === q)) return 100
-  if (fields.some(f => f.startsWith(q))) return 80
-  if ((c.search || '').includes(q)) return 60
-  if (q.length >= 3) {
-    if (fields.some(f => f.length <= q.length + 2 && editDistance(q, f) <= 1)) return 35
-  }
-  return 0
-}
-
-const results = computed(() => {
-  const q = norm(query.value)
-  if (!q) return []
-  return props.champions
-    .map(c => ({ c, s: score(c, q) }))
-    .filter(x => x.s > 0)
-    .sort((a, b) => b.s - a.s || (favSet.value.has(b.c.id) ? 1 : 0) - (favSet.value.has(a.c.id) ? 1 : 0) || compareKey(a.c, b.c))
-    .map(x => x.c)
 })
 
 function topStyle(c) {
@@ -101,6 +52,7 @@ function focusSearch() {
 
 watch(() => props.focusSignal, () => nextTick(focusSearch))
 watch(query, async () => {
+  try { sessionStorage.setItem(QUERY_KEY, query.value) } catch {}
   if (query.value) activeLetter.value = ''
   else {
     await nextTick()
@@ -152,23 +104,58 @@ function moveDrag(e) {
 function stopDrag() { dragging.value = false }
 function clearManual() { manualUntil = 0 }
 
-onMounted(() => {
-  activeLetter.value = groups.value[0]?.letter || ''
-  window.addEventListener('scroll', onScroll, { passive: true })
+const SCROLL_KEY = 'mayhem-home-scroll'
+const QUERY_KEY = 'mayhem-home-query'
+let savedScroll = 0
+let restorePending = false
+
+function attach() {
+  window.addEventListener('scroll', onScrollPassive, { passive: true })
   window.addEventListener('pointerup', stopDrag)
   window.addEventListener('pointercancel', stopDrag)
   window.addEventListener('wheel', clearManual, { passive: true })
   window.addEventListener('touchstart', clearManual, { passive: true })
-  if (props.focusSignal) nextTick(focusSearch)
-})
-onBeforeUnmount(() => {
-  window.removeEventListener('scroll', onScroll)
+}
+function detach() {
+  window.removeEventListener('scroll', onScrollPassive)
   window.removeEventListener('pointerup', stopDrag)
   window.removeEventListener('pointercancel', stopDrag)
   window.removeEventListener('wheel', clearManual)
   window.removeEventListener('touchstart', clearManual)
-  cancelAnimationFrame(scrollRaf)
+}
+function onScrollPassive() {
+  savedScroll = window.scrollY
+  onScroll()
+}
+
+onMounted(() => {
+  activeLetter.value = groups.value[0]?.letter || ''
+  try {
+    const q = sessionStorage.getItem(QUERY_KEY)
+    if (q) query.value = q
+    savedScroll = Number(sessionStorage.getItem(SCROLL_KEY) || 0) || 0
+  } catch {}
+  // 首屏（直接刷新）不恢复滚动，只在从详情返回时恢复
+  if (savedScroll > 0) restorePending = true
+  attach()
+  if (props.focusSignal) nextTick(focusSearch)
+  if (restorePending) {
+    restorePending = false
+    nextTick(() => window.scrollTo(0, savedScroll))
+  }
 })
+onActivated(() => {
+  attach()
+  if (savedScroll > 0) nextTick(() => window.scrollTo(0, savedScroll))
+})
+onDeactivated(() => {
+  detach()
+  try {
+    sessionStorage.setItem(SCROLL_KEY, String(savedScroll))
+    sessionStorage.setItem(QUERY_KEY, query.value)
+  } catch {}
+})
+onBeforeUnmount(detach)
 </script>
 
 <template>

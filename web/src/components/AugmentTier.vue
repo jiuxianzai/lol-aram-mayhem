@@ -1,12 +1,15 @@
 <script setup>
-import { ref, computed } from 'vue'
-const props = defineProps({ tier: Object, items: Array })
-const open = ref(false)
-const shown = computed(() => open.value ? props.items : props.items.slice(0, 3))
+import { computed } from 'vue'
+const props = defineProps({
+  tier: Object,
+  items: { type: Array, default: () => [] },
+  open: Boolean,
+})
+const shown = computed(() => props.open ? props.items : props.items.slice(0, 3))
 </script>
 
 <template>
-  <div class="tier-col">
+  <div class="tier-col" :class="'tier-' + tier.key">
     <div class="tier-head">
       <span>{{ tier.label }}</span>
       <small>{{ tier.en }}</small>
@@ -21,8 +24,5 @@ const shown = computed(() => open.value ? props.items : props.items.slice(0, 3))
         <p class="aug-reason">{{ a.reason }}</p>
       </li>
     </ol>
-    <button v-if="items.length > 3" class="tier-more" @click="open = !open">
-      {{ open ? '收起' : `展开 4–${items.length}` }}
-    </button>
   </div>
 </template>

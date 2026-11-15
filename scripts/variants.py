@@ -26,7 +26,7 @@ def style_allowed(champ, style):
 STYLE_ITEMS = {
     'ap':   [6655, 4645, 3089, 3135, 6653, 3157, 3102, 3165, 2503, 3116, 3152, 2420, 4628],
     'ad':   [6672, 3031, 3036, 3071, 3153, 6676, 3032, 3085, 3046, 3033, 3142, 6692, 6333, 3026],
-    'tank': [3068, 3075, 3143, 3110, 2504, 3065, 4401, 8020, 3083, 3190, 6665, 3047, 3111],
+    'tank': [3084, 3068, 3075, 3143, 3110, 2504, 3065, 4401, 8020, 2502, 3083, 3190, 6665, 3047, 3111],
     'poke': [6655, 6653, 4628, 3135, 3089, 3142, 6694, 3042, 3071, 3152, 3116, 3157],
     # 辅助：月石/流水/香炉/救赎/米凯尔/舒瑞娅/帝国指令/海力亚 + 硬辅三件（鸟盾/骑士/基克/眼石/星界据守）
     'support': [6617, 6616, 3504, 3107, 3222, 2065, 4005, 6620, 3190, 3109, 3050, 4643, 3869],
@@ -36,8 +36,9 @@ STYLE_CORE = {
     'ad_ranged': [6672, 3031, 3036],
     'ad_melee': [6692, 3071, 6333],
     'ad_assassin': [3142, 6692, 3071],
-    'tank': [3068, 3075, 3065],
-    'tank_support': [3190, 6665, 2504],
+    # 嚎哭深渊/大乱斗：肉装第一件必须是心之钢，再按对局补日炎/反甲/振奋
+    'tank': [3084, 3068, 3075],
+    'tank_support': [3084, 3190, 3065],
     'poke_ap': [6655, 6653, 4628],
     'poke_ad': [3142, 6694, 3042],
     # 辅助三条线：软辅（治疗护盾）/ 硬辅（前排保人）/ 法辅（技能消耗）
@@ -46,6 +47,14 @@ STYLE_CORE = {
     'support_caster': [4005, 6620, 6616],
 }
 BOOTS = {'ap':[3020], 'ad':[3006, 3047], 'tank':[3047, 3111], 'poke':[3020, 3009], 'support':[3158, 3009]}
+
+# 嚎哭深渊专属出门装：守护者系列 + 生命药水（OP.GG 的 starter 常混入峡谷多兰/鞋子）
+ARAM_STARTER = {
+    'AD': [3184, 2003],
+    'AP': [3112, 2003],
+    'TANK': [2051, 2003],
+    'SUPPORT': [3177, 2003],
+}
 
 # (name, 3 augment names ordered by tier ideally) — all verified in DB
 PACKAGE_DEFS = {
@@ -271,6 +280,13 @@ def support_core_key(champ):
         return 'support_tank'
     return 'support_caster'
 
+def aram_starter(champ, items):
+    """嚎哭深渊出门：守护者系列 + 药水；找不到时退回该类型通用出门。"""
+    ids = ARAM_STARTER.get(champ.get('build_type', ''), ARAM_STARTER['AD'])
+    names = [items[i]['name_zh'] for i in ids if i in items]
+    return names or ['守护者号角', '生命药水']
+
+
 def style_builds(champ, style, items, base_builds):
     base_type = {'AD':'ad','AP':'ap','TANK':'tank','SUPPORT':'support'}.get(champ.get('build_type',''), '')
     if style == base_type and base_builds.get('core'):
@@ -279,7 +295,7 @@ def style_builds(champ, style, items, base_builds):
         core = [c['items'] for c in base_builds['core'][:n_base]]
         core_ids = [c['ids'] for c in base_builds['core'][:n_base]]
         boots = base_builds.get('boots', [])[:3]
-        starter = base_builds.get('starter', [])[:3]
+        starter = aram_starter(champ, items)
         if style == 'support':
             # OP.GG 的核心序列常常是“辅助装 + 神话 + 肉/法装”，再补一条纯功能装备选
             alt = STYLE_CORE[support_core_key(champ)]
@@ -300,7 +316,13 @@ def style_builds(champ, style, items, base_builds):
             else: core_ids = [STYLE_CORE['ad_ranged']]
         core = [[items[i]['name_zh'] for i in seq if i in items] for seq in core_ids]
         boots = [items[i]['name_zh'] for i in BOOTS.get(style, []) if i in items][:3]
-        starter = base_builds.get('starter', [])[:3]
+        starter = aram_starter(champ, items)
+    # 肉玩法统一以心之钢起手（含 OP.GG 真实序列里没出心之钢的英雄）
+    if style == 'tank' and core and core_ids:
+        if '心之钢' not in core[0]:
+            seq = [3084] + [i for i in core_ids[0] if i != 3084][:2]
+            core = [[items[i]['name_zh'] for i in seq if i in items]]
+            core_ids = [seq]
     branches = {}
     for key, bystyle in STYLE_ITEMS_FALLBACK.items():
         picks = [i for i in bystyle.get(style, []) if i in items]
@@ -313,7 +335,7 @@ def style_builds(champ, style, items, base_builds):
             'items': [items[i]['name_zh'] for i in picks],
             'boots': {'vs_ad':'铁板靴','vs_ap':'水银之靴'}.get(key) if style in ('ad','tank','support') else None,
             'note': {
-                'vs_tank': {'ap':'虚空/兰德里，优先百分比与法穿。','ad':'多米尼克/凡性的提醒，补百分比穿透和减疗。','tank':'日炎/反甲，靠灼烧和减疗磨前排。','poke':'虚空/视界专注，先把前排血线压下去。','support':'帝国指令/海力亚，靠持续伤害配合队友磨血，别自己贴脸。'}[style],
+                'vs_tank': {'ap':'虚空/兰德里，优先百分比与法穿。','ad':'多米尼克/凡性的提醒，补百分比穿透和减疗。','tank':'心之钢先叠层，再补日炎/反甲，靠灼烧和减疗磨前排。','poke':'虚空/视界专注，先把前排血线压下去。','support':'帝国指令/海力亚，靠持续伤害配合队友磨血，别自己贴脸。'}[style],
                 'vs_ad': {'ap':'中娅/护臂，活着才有输出。','ad':'守护天使/死亡之舞，防物理爆发。','tank':'兰顿/反甲，减攻速和暴击伤害。','poke':'中娅/护臂，被贴脸时保命。','support':'钢铁烈阳之匣/骑士之誓，先保住C位再谈输出。'}[style],
                 'vs_ap': {'ap':'女妖/败魔，防先手控制与法术爆发。','ad':'大饮魔刀/水银靴，补魔抗和免控。','tank':'败魔/振奋/自然之力，先扛第一轮。','poke':'女妖/败魔，别被先手秒。','support':'米凯尔的祝福/鸟盾，解控与团队魔抗优先。'}[style],
                 'vs_poke': {'ap':'火箭腰带/瑞莱，补位移和黏人。','ad':'幽梦/亡者板甲，补移速开团。','tank':'鸟盾/亡者板甲，帮队友吃第一波。','poke':'幽梦/火箭腰带，用移速躲消耗。','support':'舒瑞娅的战歌/流水法杖，用移速帮队友进出消耗。'}[style],
@@ -376,7 +398,7 @@ def build_variant(con, champ, style, items, global_pool, freq, aug_by_name, base
     spikes.append({
         'ap':'偏AP：1件套（卢登/火箭腰带）循环起步，2件套（影焰/帽子）爆发，3件套秒后排。',
         'ad':'偏AD：1件套（海妖/星蚀）输出起步，2件套（无尽/黑切）团战强势，3件套接管。',
-        'tank':'偏肉：1件防装即可接团，2件套最肉，3件套靠控制/反甲/魔抗装站住。',
+        'tank':'偏肉：心之钢先叠层数，1件套即可接团，2件套（日炎/反甲）最肉，3件套靠控制与魔抗装站住。',
         'poke':'偏消耗：1件套（卢登/幽梦）压血线，2件套（视界/赛瑞尔达）进入强势，3件套远程压制。',
         'support':'偏辅助：1件套（月石/鸟盾）保人能力成型，2件套（香炉/救赎/骑士）团队收益最高，3件套（米凯尔/流水）补齐解控与移速。',
     }[style])
