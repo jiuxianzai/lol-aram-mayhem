@@ -107,12 +107,24 @@ Write-Step "启动服务  $url"
 Write-Host '    浏览器会自动打开；要停止服务，直接关闭这个窗口。' -ForegroundColor DarkGray
 Write-Host ''
 
+$server = $null
 try {
-  & node $viteJs --host 127.0.0.1 --port $Port --strictPort
+  # 用 Start-Process 拿到 PID：窗口被关 / 服务异常退出时都能把 node 一起收掉
+  $server = Start-Process -FilePath 'node' `
+    -ArgumentList @($viteJs, '--host', '127.0.0.1', '--port', "$Port", '--strictPort') `
+    -NoNewWindow -PassThru
+  $server.WaitForExit()
 } finally {
   if ($browserJob) {
     Stop-Job $browserJob -ErrorAction SilentlyContinue
     Remove-Job $browserJob -Force -ErrorAction SilentlyContinue
+  }
+  if ($server -and -not $server.HasExited) {
+    if ($IsWindows -or $env:OS -eq 'Windows_NT') {
+      & taskkill /PID $server.Id /T /F 2>$null | Out-Null
+    } else {
+      Stop-Process -Id $server.Id -Force -ErrorAction SilentlyContinue
+    }
   }
   Write-Host ''
   Write-Host '服务已停止。' -ForegroundColor Yellow
