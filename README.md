@@ -131,6 +131,25 @@ python scripts/lol.py search "魔法飞弹"           # 搜海克斯/装备
 
 ## 网页版
 
+### Windows：双击启动（推荐）
+
+直接双击仓库根目录的 **`start-web.bat`**：
+
+1. 第一次运行会自动 `npm install`（约 1-2 分钟，只需一次）
+2. 起好服务后自动打开浏览器 `http://127.0.0.1:5178/`
+3. **关掉那个黑窗口 = 停止服务**，不用再手动关
+
+细节：
+
+- 如果端口 5178 被上一次没退干净的进程占着，启动时会自动结束它
+- 提示 `没找到 Node.js` 就装一个：`winget install --id OpenJS.NodeJS.LTS -e`
+- 想换端口：在命令行执行 `start-web.bat -Port 5180`（双击时默认 5178）
+- 启动窗口里能看到 Vite 日志和报错，出问题先看那里
+
+底层是 `start-web.ps1`，`.bat` 只是负责双击不被执行策略拦住，不需要改系统设置。
+
+### macOS / Linux（或手动启动）
+
 ```bash
 cd web
 npm install
@@ -174,7 +193,7 @@ python scripts/export_web.py             # 重新导出网页数据
 | 输出中文乱码 / `UnicodeEncodeError` | PowerShell 先执行 `chcp 65001`；脚本里已设 `PYTHONUTF8=1`，仍乱码就设环境变量 `PYTHONUTF8=1` 后重开终端 |
 | PowerShell 提示无法加载 `install.ps1` | 用 `powershell -ExecutionPolicy Bypass -File .\install.ps1`，不要直接双击 |
 | `npm install` 很慢 | 换源：`npm config set registry https://registry.npmmirror.com` |
-| 端口 5178 被占用 | `npm run dev -- --port 5180` |
+| 端口 5178 被占用 | 双击启动会自动结束占用进程；手动启动用 `npm run dev -- --port 5180` |
 | 网页打开是空白 | 用 `npm run dev` 而不是直接双击 `index.html`（需要 Vite 起本地服务） |
 
 ## 数据口径

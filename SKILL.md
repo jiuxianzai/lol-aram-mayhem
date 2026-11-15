@@ -185,7 +185,8 @@ npm run dev
 # 打开 http://127.0.0.1:5178/
 ```
 
-Windows：
+Windows：**直接双击仓库根目录的 `start-web.bat`**（自动装依赖、自动开浏览器，关掉窗口即停服务）；
+也可以在 PowerShell 里手动起：
 
 ```powershell
 cd "$env:USERPROFILE\.dsh\skills\lol-aram-mayhem\web"
