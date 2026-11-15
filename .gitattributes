@@ -1,0 +1,11 @@
+# Windows 脚本必须保持 CRLF，否则 cmd 解析可能出错
+*.bat text eol=crlf
+*.ps1 text eol=crlf
+
+# Unix 脚本保持 LF
+*.sh text eol=lf
+install.sh text eol=lf
+
+# 二进制
+*.jpg binary
+*.db binary
