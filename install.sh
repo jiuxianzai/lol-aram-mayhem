@@ -8,6 +8,9 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$ROOT"
 
+export PYTHONUTF8=1
+export PYTHONIOENCODING=utf-8
+
 WITH_WEB=0
 for arg in "$@"; do
   case "$arg" in

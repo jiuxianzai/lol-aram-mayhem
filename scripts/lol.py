@@ -13,6 +13,13 @@ from __future__ import annotations
 import argparse, json, re, sqlite3, sys, unicodedata
 from pathlib import Path
 
+# Windows 控制台默认可能不是 UTF-8，直接输出中文会 UnicodeEncodeError
+for _stream in (sys.stdout, sys.stderr):
+    try:
+        _stream.reconfigure(encoding='utf-8', errors='replace')
+    except Exception:
+        pass
+
 ROOT = Path(__file__).resolve().parent.parent
 DATA = ROOT / 'data'
 

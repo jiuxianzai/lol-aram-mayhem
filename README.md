@@ -164,6 +164,17 @@ python scripts/export_web.py             # 重新导出网页数据
 
 ---
 
+## 常见问题
+
+| 现象 | 处理 |
+| --- | --- |
+| Windows 上 `python` 不是内部命令 | 装 Python 3.10+ 时勾选 *Add python.exe to PATH*，或改用 `py -3` |
+| 输出中文乱码 / `UnicodeEncodeError` | PowerShell 先执行 `chcp 65001`；脚本里已设 `PYTHONUTF8=1`，仍乱码就设环境变量 `PYTHONUTF8=1` 后重开终端 |
+| PowerShell 提示无法加载 `install.ps1` | 用 `powershell -ExecutionPolicy Bypass -File .\install.ps1`，不要直接双击 |
+| `npm install` 很慢 | 换源：`npm config set registry https://registry.npmmirror.com` |
+| 端口 5178 被占用 | `npm run dev -- --port 5180` |
+| 网页打开是空白 | 用 `npm run dev` 而不是直接双击 `index.html`（需要 Vite 起本地服务） |
+
 ## 数据口径
 
 - **海克斯档位**：白银 / 黄金 / 棱彩，以 LoL Wiki + CommunityDragon 交叉核对
