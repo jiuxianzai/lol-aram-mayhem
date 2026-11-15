@@ -54,7 +54,7 @@ Windows 上命令里的 `python3` 一律换成 `python`（或 `py -3`）。
 ```powershell
 # 1. 放到你和 agent 约定的 skills 目录（以 .dsh 为例）
 New-Item -ItemType Directory -Force "$env:USERPROFILE\.dsh\skills" | Out-Null
-git clone <本仓库地址> "$env:USERPROFILE\.dsh\skills\lol-aram-mayhem"
+git clone https://github.com/jiuxianzai/lol-aram-mayhem.git "$env:USERPROFILE\.dsh\skills\lol-aram-mayhem"
 cd "$env:USERPROFILE\.dsh\skills\lol-aram-mayhem"
 
 # 2. 自检（检查 Python、跑一次 status）
@@ -66,11 +66,13 @@ powershell -ExecutionPolicy Bypass -File .\install.ps1 -Web
 
 > 执行策略报错时，用上面这种 `-ExecutionPolicy Bypass -File` 的写法即可，不需要改系统设置。
 
+> 仓库是**私有**的，clone 前需要先登录：`gh auth login`（推荐，装好后用 `gh repo clone jiuxianzai/lol-aram-mayhem`），或者把 Personal Access Token 存进 Git 凭据管理器。
+
 ### macOS / Linux
 
 ```bash
 mkdir -p ~/.dsh/skills
-git clone <本仓库地址> ~/.dsh/skills/lol-aram-mayhem
+git clone https://github.com/jiuxianzai/lol-aram-mayhem.git ~/.dsh/skills/lol-aram-mayhem
 cd ~/.dsh/skills/lol-aram-mayhem
 chmod +x install.sh && ./install.sh        # 加 --web 顺带装网页依赖
 ```
