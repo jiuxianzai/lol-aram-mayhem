@@ -4,8 +4,10 @@ Vue 3 + Vite 单页应用。数据是静态 JSON，不需要后端。
 
 ## 开发
 
+从仓库根目录：
+
 ```bash
-cd ~/.dsh/skills/lol-aram-mayhem/web
+cd web
 npm install
 npm run dev
 ```
@@ -15,11 +17,10 @@ npm run dev
 ## 重新生成数据
 
 ```bash
-cd ~/.dsh/skills/lol-aram-mayhem
 python3 scripts/export_web.py
 ```
 
-会写入 `web/public/data/lol.json`（约 9 MB）。
+会写入 `web/public/data/lol.json`（约 8 MB）。
 
 ## 构建
 
