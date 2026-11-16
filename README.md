@@ -227,7 +227,7 @@ cd web && npm run build
 
 代码以 [MIT License](LICENSE) 发布。
 
-`data/` 与 `web/public/data/` 里的游戏数据（英雄、装备、海克斯名称、数值、图标）来自 Riot Games 的 Data Dragon / CommunityDragon、LoL Wiki 和 OP.GG，**不适用 MIT 协议**，版权归各自所有者。`scripts/vendor/pypinyin` 是 [pypinyin](https://github.com/mozillazg/python-pinyin) 的内置副本，同样为 MIT。
+`data/` 与 `web/public/data/` 里的游戏数据来自 Riot Games 的 Data Dragon / CommunityDragon、LoL Wiki 和 OP.GG，**不适用 MIT 协议**，版权归各自所有者；`scripts/vendor/pypinyin` 是 [pypinyin](https://github.com/mozillazg/python-pinyin) 的内置副本。详见 [THIRD-PARTY-NOTICES](THIRD-PARTY-NOTICES.md)。
 
 ## 隐私与安全
 

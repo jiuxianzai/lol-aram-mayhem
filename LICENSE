@@ -19,15 +19,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
----
-
-Third-party notices
-
-- Game data in data/ and web/public/data/ (champion, item, and augment names,
-  stats, and icons) is derived from Riot Games' Data Dragon / CommunityDragon,
-  the League of Legends Wiki, and OP.GG. It is not covered by the MIT license
-  above and remains the property of its respective owners.
-- scripts/vendor/pypinyin is a bundled copy of pypinyin
-  (https://github.com/mozillazg/python-pinyin), licensed under MIT.
-- This project is unofficial and is not endorsed by or affiliated with Riot Games.
