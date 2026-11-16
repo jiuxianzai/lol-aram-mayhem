@@ -19,7 +19,7 @@
 - 🎯 **玩法筛选**：AD / AP / 肉 / 消耗 / 辅助；肉只对战士坦克开放，辅助只对辅助英雄开放
 - 🔍 **英雄解析**：中文名、英文名、全拼、拼音首字母、常用外号都能命中，有歧义时给候选
 - 📦 **本地数据**：当前版本 SQLite（Patch 16.22），按版本存档，可回滚
-- 🖥️ **网页版**：顶栏搜索（`/`、`⌘K`）、收藏、玩法标签切换、设置抽屉调字号，纯静态无后端
+- 🖥️ **网页版**：顶栏搜索（`/`、macOS `⌘K` / Windows `Ctrl+K`）、收藏、玩法标签切换、设置抽屉调字号，纯静态无后端
 
 ![英雄详情：玩法、出装与海克斯](docs/screenshots/ahri-detail.jpg)
 
@@ -29,6 +29,8 @@
 lol-aram-mayhem/
 ├── SKILL.md              # Agent 使用说明（工作流 + 硬性约束）
 ├── README.md             # 本文件：安装 / 使用 / 维护
+├── LICENSE               # MIT（仅覆盖代码）
+├── THIRD-PARTY-NOTICES.md # 游戏数据与第三方库声明
 ├── install.sh            # macOS / Linux 一键自检安装
 ├── install.ps1           # Windows 一键自检安装
 ├── start-web.bat         # Windows 双击启动网页
@@ -42,8 +44,12 @@ lol-aram-mayhem/
 │   ├── export_web.py     # 导出网页数据 web/public/data/lol.json
 │   ├── update.py         # 抓新版本 → 建新库 → 校验 → 切指针
 │   ├── build_db.py / fetch_sources.py / parse_pages.py
+│   ├── requirements.txt  # 仅更新数据时需要（查询本身只用标准库）
 │   └── vendor/pypinyin   # 内置拼音库，无需联网安装
-└── web/                  # Vue 3 + Vite 网页
+├── web/                  # Vue 3 + Vite 网页
+│   ├── public/data/lol.json  # 网页静态数据（已随仓库提供）
+│   └── src/              # 组件与样式
+└── docs/screenshots/     # README 截图
 ```
 
 ## 环境要求
@@ -57,6 +63,8 @@ lol-aram-mayhem/
 Windows 上命令里的 `python3` 一律换成 `python`（或 `py -3`）。
 
 ## 安装
+
+仓库约 25 MB（含 3 MB SQLite 与 8 MB 网页数据），clone 会稍慢，属正常现象。
 
 ### macOS / Linux
 
@@ -151,7 +159,7 @@ npm run build        # 产物在 web/dist/，交给任意静态服务器
 npm run preview      # 本地预览构建产物
 ```
 
-网页数据是静态 JSON（`web/public/data/lol.json`，约 8 MB），不需要后端。更新数据库后重新导出：
+网页数据是静态 JSON（`web/public/data/lol.json`，约 8 MB），已随仓库提供，clone 后直接 `npm run dev` 即可，不需要后端。更新数据库后才需要重新导出：
 
 ```bash
 python3 scripts/export_web.py
